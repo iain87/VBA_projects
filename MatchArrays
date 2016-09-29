@@ -1,0 +1,50 @@
+Function lastRow(x As Range, y As Worksheet)
+
+lastRow = y.Cells(Rows.Count, x.Column).End(xlUp).Row
+
+End Function
+
+Sub MatchArrays()
+
+Dim arr1() As Variant
+Dim arr2() As Variant
+Dim rowX As Byte, colX As Byte, aX As Byte
+
+Dim arr1x As Long, arr2y As Long
+
+arr1x = lastRow(Range("A1"), ActiveSheet) 'returns the last row in the column for cell A1
+arr2y = lastRow(Range("A1"), Sheets(2)) 'returns the last row in the column for cell A1 on sheet2
+
+ReDim arr1(1 To arr1x, 1 To 4) As Variant 'dynamically sizes arr1 array
+ReDim arr2(1 To arr2y, 1 To 2) As Variant 'dynamically sizes arr2 array
+
+For rowX = 1 To arr1x 'arr1x is the last row in the active sheet and the end of array arr1
+    For colX = 1 To 3 'only fills array up to 3rd dimension as 4th is reserved for the match results
+
+        arr1(rowX, colX) = Cells(rowX, colX).Value 'set the Cells range to whatever your array is
+
+    Next colX
+Next rowX
+
+For rowX = 1 To arr2y 'arr2y is the last row in sheet 2 and the end of array arr2
+    For colX = 1 To 2
+
+        arr2(rowX, colX) = Sheets(2).Cells(rowX, colX).Value
+
+    Next colX
+Next rowX
+
+For aX = 1 To arr1x
+    For rowX = 1 To arr2y
+        If arr1(aX, 3) = arr2(rowX, 1) Then
+            arr1(aX, 4) = arr2(rowX, 2)
+            rowX = arr2y 'helps to exit array earlier when a match is found
+        End If
+    Next rowX
+Next aX
+
+For rowX = 1 To arr1x
+    Cells(rowX, 4).Value = arr1(rowX, 4)
+Next rowX
+
+End Sub
