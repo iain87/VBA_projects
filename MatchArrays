@@ -25,10 +25,17 @@ Public Sub MatchArrays()
         Next rowSecondArray
     Next rowFirstArray
     Erase secondArray
-
-    For rowFirstArray = 1 To UBound(firstArray, 1)
-        ThisWorkbook.Worksheets(1).Cells(rowFirstArray, 4).Value = firstArray(rowFirstArray, 4)
-    Next rowFirstArray
+    
+    Dim arrayToPaste As Variant
+    Dim i As Long
+    ReDim arrayToPaste(UBound(firstArray, 1), 1)
+    For i = LBound(firstArray, 1) To UBound(firstArray, 1)
+        arrayToPaste(i, 1) = firstArray(i, 4)
+    Next i
+    
+    With ThisWorkbook.Worksheets(1)
+        .Range(.Cells(1, 4), .Cells(UBound(firstArray, 1), 4)).Value = arrayToPaste
+    End With
     Erase firstArray
 
 End Sub
