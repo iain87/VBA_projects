@@ -1,44 +1,75 @@
 Option Explicit
-Option Base 1
 
 Public Sub MatchArrays()
 
-    Dim firstArray As Variant
-    With ThisWorkbook.Worksheets(1)
-        firstArray = .Range("A1").CurrentRegion
+    Dim workingArray As Variant
+    Dim workingCell As Range
+    Dim workingLastRow As Long
+    Set workingCell = Application.InputBox("Select the first cell of your comparison column.", Type:=8)
+    workingLastRow = workingCell.End(xlDown).Row
+    With workingCell
+        workingArray = Range(.Address, Left(.Address, Len(.Address) - 1) & workingLastRow)
     End With
 
-    Dim secondArray As Variant
-    With ThisWorkbook.Worksheets(2)
-        secondArray = .Range("A1").CurrentRegion
+    Dim targetArray As Variant
+    Dim targetCell As Range
+    Set targetCell = Application.InputBox("Select the first cell of your target column.", Type:=8)
+    With targetCell
+        targetArray = Range(.Address, Left(.Address, Len(.Address) - 1) & workingLastRow)
     End With
 
     Dim i As Long
-    Dim dictKeyForLookup As String
-    Dim dictValueToReturn As String
-
-    Dim dict As Object
-    Set dict = CreateObject("Scripting.Dictionary")
-    dict.CompareMode = vbTextCompare
-
-    For i = LBound(firstArray, 1) To UBound(firstArray, 1)
-        dictKeyForLookup = firstArray(i, 4)
-        dictValueToReturn = firstArray(i, 3)
-        If Not dict.Exists(dictKeyForLookup) Then
-            dict.Add Key:=dictKeyForLookup, Item:=dictValueToReturn
-        End If
+    
+    ReDim Preserve workingArray(1 To UBound(workingArray, 1), 1 To UBound(workingArray, 2) + 1)
+    For i = LBound(workingArray, 1) To UBound(workingArray, 1)
+        workingArray(i, UBound(workingArray, 2)) = targetArray(i, 1)
     Next i
+    
+    Dim comparisonArray As Variant
+    Dim comparisonCell As Range
+    Dim comparisonLastRow As Long
+    Set comparisonCell = Application.InputBox("Select the first cell of the column to match values with.", Type:=8)
+    comparisonLastRow = comparisonCell.End(xlDown).Row
+    With comparisonCell
+        comparisonArray = Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
+    End With
 
-    Dim arrayToPaste As Variant
-    ReDim arrayToPaste(UBound(secondArray, 1), 1)
-    For i = LBound(secondArray, 1) To UBound(secondArray, 1)
-        If dict.Exists(secondArray(i, 1)) Then
-            arrayToPaste(i, 1) = dict.Item(secondArray(i, 1))
-        End If
+    Dim returnArray As Variant
+    Dim returnCell As Range
+    Set returnCell = Application.InputBox("Select the first cell from the column you wish to return values from.", Type:=8)
+    With returnCell
+        returnArray = Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
+    End With
+
+    ReDim Preserve comparisonArray(1 To UBound(comparisonArray, 1), 1 To UBound(comparisonArray, 2) + 1)
+    For i = LBound(comparisonArray, 1) To UBound(comparisonArray, 1)
+        comparisonArray(i, UBound(comparisonArray, 2)) = returnArray(i, 1)
     Next i
+    
+    With New Scripting.Dictionary
+        .CompareMode = vbTextCompare
 
-    With ThisWorkbook.Worksheets(1)
-        .Range(.Cells(1, 4), .Cells(UBound(secondArray, 1), 4)).Value = arrayToPaste
+        For i = LBound(comparisonArray, 1) To UBound(comparisonArray, 1)
+            If Not .Exists(comparisonArray(i, 1)) Then
+                .Add comparisonArray(i, 1), comparisonArray(i, 2)
+            End If
+        Next i
+
+        Dim arrayToPaste As Variant
+        ReDim arrayToPaste(1 To UBound(workingArray, 1), 1 To 1)
+        For i = LBound(workingArray, 1) To UBound(workingArray, 1)
+            If Len(workingArray(i, 2)) = 0 Then
+                If .Exists(workingArray(i, 1)) Then
+                    arrayToPaste(i, 1) = .Item(workingArray(i, 1))
+                End If
+            Else
+                arrayToPaste(i, 1) = workingArray(i, 2)
+            End If
+        Next i
+    End With
+
+    With targetCell
+        Range(.Address, Left(.Address, Len(.Address) - 1) & workingLastRow) = arrayToPaste
     End With
 
 End Sub
