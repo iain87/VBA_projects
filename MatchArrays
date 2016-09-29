@@ -5,37 +5,40 @@ Public Sub MatchArrays()
 
     Dim firstArray As Variant
     With ThisWorkbook.Worksheets(1)
-        firstArray = .Range("A1", .Range("A1").End(xlDown).End(xlToRight))
+        firstArray = .Range("A1").CurrentRegion
     End With
-    ReDim Preserve firstArray(UBound(firstArray, 1), UBound(firstArray, 2) + 1)
 
     Dim secondArray As Variant
     With ThisWorkbook.Worksheets(2)
-        secondArray = .Range("A1", .Range("A1").End(xlDown).End(xlToRight))
+        secondArray = .Range("A1").CurrentRegion
     End With
 
-    Dim rowFirstArray As Long
-    Dim rowSecondArray As Long
-    For rowFirstArray = 1 To UBound(firstArray,1)   
-        For rowSecondArray = 1 To UBound(secondArray,1)        
-            If firstArray(rowFirstArray, 3) = secondArray(rowSecondArray, 1) Then            
-                firstArray(rowFirstArray, 4) = secondArray(rowSecondArray, 2)            
-                Exit For     
-            End If    
-        Next rowSecondArray
-    Next rowFirstArray
-    Erase secondArray
-    
-    Dim arrayToPaste As Variant
     Dim i As Long
-    ReDim arrayToPaste(UBound(firstArray, 1), 1)
+    Dim dictKeyForLookup As String
+    Dim dictValueToReturn As String
+
+    Dim dict As Object
+    Set dict = CreateObject("Scripting.Dictionary")
+    dict.CompareMode = vbTextCompare
+
     For i = LBound(firstArray, 1) To UBound(firstArray, 1)
-        arrayToPaste(i, 1) = firstArray(i, 4)
+        dictKeyForLookup = firstArray(i, 4)
+        dictValueToReturn = firstArray(i, 3)
+        If Not dict.Exists(dictKeyForLookup) Then
+            dict.Add Key:=dictKeyForLookup, Item:=dictValueToReturn
+        End If
     Next i
-    
+
+    Dim arrayToPaste As Variant
+    ReDim arrayToPaste(UBound(secondArray, 1), 1)
+    For i = LBound(secondArray, 1) To UBound(secondArray, 1)
+        If dict.Exists(secondArray(i, 1)) Then
+            arrayToPaste(i, 1) = dict.Item(secondArray(i, 1))
+        End If
+    Next i
+
     With ThisWorkbook.Worksheets(1)
-        .Range(.Cells(1, 4), .Cells(UBound(firstArray, 1), 4)).Value = arrayToPaste
+        .Range(.Cells(1, 4), .Cells(UBound(secondArray, 1), 4)).Value = arrayToPaste
     End With
-    Erase firstArray
 
 End Sub
