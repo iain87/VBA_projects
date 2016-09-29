@@ -8,22 +8,22 @@ Public Sub MatchArrays()
     Set workingCell = Application.InputBox("Select the first cell of your comparison column.", Type:=8)
     workingLastRow = workingCell.End(xlDown).Row
     With workingCell
-        workingArray = Range(.Address, Left(.Address, Len(.Address) - 1) & workingLastRow)
+        workingArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & workingLastRow)
     End With
 
     Dim targetArray As Variant
     Dim targetCell As Range
     Set targetCell = Application.InputBox("Select the first cell of your target column.", Type:=8)
     With targetCell
-        targetArray = Range(.Address, Left(.Address, Len(.Address) - 1) & workingLastRow)
+        targetArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & workingLastRow)
     End With
 
-    Dim i As Long
+    Dim loopCount As Long
     
     ReDim Preserve workingArray(1 To UBound(workingArray, 1), 1 To UBound(workingArray, 2) + 1)
-    For i = LBound(workingArray, 1) To UBound(workingArray, 1)
-        workingArray(i, UBound(workingArray, 2)) = targetArray(i, 1)
-    Next i
+    For loopCount = LBound(workingArray, 1) To UBound(workingArray, 1)
+        workingArray(loopCount, UBound(workingArray, 2)) = targetArray(loopCount, 1)
+    Next loopCount
     
     Dim comparisonArray As Variant
     Dim comparisonCell As Range
@@ -31,45 +31,45 @@ Public Sub MatchArrays()
     Set comparisonCell = Application.InputBox("Select the first cell of the column to match values with.", Type:=8)
     comparisonLastRow = comparisonCell.End(xlDown).Row
     With comparisonCell
-        comparisonArray = Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
+        comparisonArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
     End With
 
     Dim returnArray As Variant
     Dim returnCell As Range
     Set returnCell = Application.InputBox("Select the first cell from the column you wish to return values from.", Type:=8)
     With returnCell
-        returnArray = Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
+        returnArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
     End With
 
     ReDim Preserve comparisonArray(1 To UBound(comparisonArray, 1), 1 To UBound(comparisonArray, 2) + 1)
-    For i = LBound(comparisonArray, 1) To UBound(comparisonArray, 1)
-        comparisonArray(i, UBound(comparisonArray, 2)) = returnArray(i, 1)
-    Next i
+    For loopCount = LBound(comparisonArray, 1) To UBound(comparisonArray, 1)
+        comparisonArray(loopCount, UBound(comparisonArray, 2)) = returnArray(loopCount, 1)
+    Next loopCount
     
     With New Scripting.Dictionary
         .CompareMode = vbTextCompare
 
-        For i = LBound(comparisonArray, 1) To UBound(comparisonArray, 1)
-            If Not .Exists(comparisonArray(i, 1)) Then
-                .Add comparisonArray(i, 1), comparisonArray(i, 2)
+        For loopCount = LBound(comparisonArray, 1) To UBound(comparisonArray, 1)
+            If Not .Exists(comparisonArray(loopCount, 1)) Then
+                .Add comparisonArray(loopCount, 1), comparisonArray(loopCount, 2)
             End If
-        Next i
+        Next loopCount
 
         Dim arrayToPaste As Variant
         ReDim arrayToPaste(1 To UBound(workingArray, 1), 1 To 1)
-        For i = LBound(workingArray, 1) To UBound(workingArray, 1)
-            If Len(workingArray(i, 2)) = 0 Then
-                If .Exists(workingArray(i, 1)) Then
-                    arrayToPaste(i, 1) = .Item(workingArray(i, 1))
+        For loopCount = LBound(workingArray, 1) To UBound(workingArray, 1)
+            If Len(workingArray(loopCount, 2)) = 0 Then
+                If .Exists(workingArray(loopCount, 1)) Then
+                    arrayToPaste(loopCount, 1) = .Item(workingArray(loopCount, 1))
                 End If
             Else
-                arrayToPaste(i, 1) = workingArray(i, 2)
+                arrayToPaste(loopCount, 1) = workingArray(loopCount, 2)
             End If
-        Next i
+        Next loopCount
     End With
 
     With targetCell
-        Range(.Address, Left(.Address, Len(.Address) - 1) & workingLastRow) = arrayToPaste
+        .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & workingLastRow) = arrayToPaste
     End With
 
 End Sub
