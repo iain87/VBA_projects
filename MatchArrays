@@ -75,21 +75,29 @@ Public Sub MatchArrays()
         comparisonArray(loopCount, UBound(comparisonArray, 2)) = returnArray(loopCount, 1)
     Next loopCount
     
-    Call CompareArraysInScriptingDictionary( _
-        referenceArray, _
-        comparisonArray, _
-        referenceLastRow, _
-        targetCell)
+    Dim arrayMatchDictionary As Scripting.Dictionary
+    Set arrayMatchDictionary = New Scripting.Dictionary
     
+    Call PopulateDictionaryWithArray( _
+        arrayMatchDictionary, _
+        comparisonArray)
+        
+    Call CompareArrayToDictionary( _
+        arrayMatchDictionary, _
+        referenceArray, _
+        targetCell, _
+        referenceLastRow)
+        
 End Sub
 
-Sub CompareArraysInScriptingDictionary( _
-    ByRef referenceArray As Variant, _
-    ByRef comparisonArray As Variant, _
-    ByVal referenceLastRow As Long, _
-    ByVal targetCell As Range)
+Sub PopulateDictionaryWithArray( _
+    ByRef arrayMatchDictionary As Variant, _
+    ByRef comparisonArray As Variant)
     
-    With New Scripting.Dictionary
+    'Dim arrayMatchDictionary As Scripting.Dictionary
+    'Set arrayMatchDictionary = New Scripting.Dictionary
+    
+    With arrayMatchDictionary
         .CompareMode = vbTextCompare
         
         Dim loopCount As Long
@@ -98,10 +106,21 @@ Sub CompareArraysInScriptingDictionary( _
                 .Add comparisonArray(loopCount, 1), comparisonArray(loopCount, 2)
             End If
         Next loopCount
+    End With
+    
+End Sub
 
+Sub CompareArrayToDictionary( _
+    ByRef arrayMatchDictionary As Variant, _
+    ByRef referenceArray As Variant, _
+    ByVal targetCell As Range, _
+    ByVal referenceLastRow As Long)
+    
+    With arrayMatchDictionary
         Dim arrayToPaste As Variant
         ReDim arrayToPaste(1 To UBound(referenceArray, 1), 1 To 1)
         
+        Dim loopCount As Long
         For loopCount = LBound(referenceArray, 1) To UBound(referenceArray, 1)
             If Len(referenceArray(loopCount, 2)) = 0 Then
                 If .Exists(referenceArray(loopCount, 1)) Then
