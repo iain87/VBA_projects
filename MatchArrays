@@ -82,20 +82,20 @@ Public Sub MatchArrays()
         arrayMatchDictionary, _
         comparisonArray)
         
-    Call CompareArrayToDictionary( _
-        arrayMatchDictionary, _
-        referenceArray, _
-        targetCell, _
-        referenceLastRow)
+    Dim arrayToPaste As Variant
+    ReDim arrayToPaste(1 To UBound(referenceArray, 1), 1 To 1)
+    
+    arrayToPaste = CompareArrayToDictionary(arrayMatchDictionary, referenceArray)
+        
+    With targetCell
+        .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & referenceLastRow) = arrayToPaste
+    End With
         
 End Sub
 
 Sub PopulateDictionaryWithArray( _
     ByRef arrayMatchDictionary As Variant, _
     ByRef comparisonArray As Variant)
-    
-    'Dim arrayMatchDictionary As Scripting.Dictionary
-    'Set arrayMatchDictionary = New Scripting.Dictionary
     
     With arrayMatchDictionary
         .CompareMode = vbTextCompare
@@ -110,31 +110,27 @@ Sub PopulateDictionaryWithArray( _
     
 End Sub
 
-Sub CompareArrayToDictionary( _
+Function CompareArrayToDictionary( _
     ByRef arrayMatchDictionary As Variant, _
-    ByRef referenceArray As Variant, _
-    ByVal targetCell As Range, _
-    ByVal referenceLastRow As Long)
+    ByRef referenceArray As Variant)
+    
+    Dim dictionaryLoopedArray As Variant
+    ReDim dictionaryLoopedArray(1 To UBound(referenceArray, 1), 1 To 1)
     
     With arrayMatchDictionary
-        Dim arrayToPaste As Variant
-        ReDim arrayToPaste(1 To UBound(referenceArray, 1), 1 To 1)
-        
         Dim loopCount As Long
         For loopCount = LBound(referenceArray, 1) To UBound(referenceArray, 1)
             If Len(referenceArray(loopCount, 2)) = 0 Then
                 If .Exists(referenceArray(loopCount, 1)) Then
-                    arrayToPaste(loopCount, 1) = .Item(referenceArray(loopCount, 1))
+                    dictionaryLoopedArray(loopCount, 1) = .Item(referenceArray(loopCount, 1))
                 End If
             Else
-                arrayToPaste(loopCount, 1) = referenceArray(loopCount, 2)
+                dictionaryLoopedArray(loopCount, 1) = referenceArray(loopCount, 2)
             End If
         Next loopCount
+        
     End With
+    
+    CompareArrayToDictionary = dictionaryLoopedArray
 
-    With targetCell
-        .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & referenceLastRow) = arrayToPaste
-    End With
-
-End Sub
-
+End Function
