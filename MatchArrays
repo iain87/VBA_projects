@@ -47,7 +47,7 @@ Public Sub MatchArrays()
        
     Dim targetArray As Variant
     With userInputCells(2)
-        targetArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & referenceLastRow)
+        targetArray = .Parent.Range(.Parent.Cells(userInputCells(1).Row, .Column), Left(.Address, Len(.Address) - 1) & referenceLastRow)
     End With
     
     Dim comparisonLastRow As Long
@@ -60,7 +60,7 @@ Public Sub MatchArrays()
     
     Dim returnArray As Variant
     With userInputCells(4)
-        returnArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
+        returnArray = .Parent.Range(.Parent.Cells(userInputCells(3).Row, .Column), Left(.Address, Len(.Address) - 1) & comparisonLastRow)
     End With
     
     Dim arrayMatchDictionary As Scripting.Dictionary
