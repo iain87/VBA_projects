@@ -1,75 +1,129 @@
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''  Copyright (C) 2016  Iain Saunders                                         ''
+''                                                                            ''
+''  This program is free software: you can redistribute it and/or modify      ''
+''  it under the terms of the GNU General Public License as published by      ''
+''  the Free Software Foundation, either version 3 of the License, or         ''
+''  (at your option) any later version.                                       ''
+''                                                                            ''
+''  This program is distributed in the hope that it will be useful,           ''
+''  but WITHOUT ANY WARRANTY; without even the implied warranty of            ''
+''  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             ''
+''  GNU General Public License for more details.                              ''
+''                                                                            ''
+''  You should have received a copy of the GNU General Public License         ''
+''  along with this program.  If not, see <http://www.gnu.org/licenses/>.     ''
+''                                                                            ''
+''  This code is hosted on GitHub <https://github.com/iain87/VBA_projects>.   ''
+''                                                                            ''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''                                                                            ''
+''  To run this code, you will require the Microsoft Scripting Runtime        ''
+''  package, which you can enable from the VBE editor by going to tools       ''
+''  then references and choosing it from the list there.                      ''
+''                                                                            ''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
 Option Explicit
 
 Public Sub MatchArrays()
 
-    Dim workingArray As Variant
-    Dim workingCell As Range
-    Dim workingLastRow As Long
-    Set workingCell = Application.InputBox("Select the first cell of your comparison column.", Type:=8)
-    workingLastRow = workingCell.End(xlDown).Row
-    With workingCell
-        workingArray = Range(.Address, Left(.Address, Len(.Address) - 1) & workingLastRow)
-    End With
-
-    Dim targetArray As Variant
-    Dim targetCell As Range
-    Set targetCell = Application.InputBox("Select the first cell of your target column.", Type:=8)
-    With targetCell
-        targetArray = Range(.Address, Left(.Address, Len(.Address) - 1) & workingLastRow)
-    End With
-
+    Dim userInputCells(1 To 4) As Range
     Dim i As Long
-    
-    ReDim Preserve workingArray(1 To UBound(workingArray, 1), 1 To UBound(workingArray, 2) + 1)
-    For i = LBound(workingArray, 1) To UBound(workingArray, 1)
-        workingArray(i, UBound(workingArray, 2)) = targetArray(i, 1)
+    For i = 1 To 4
+        Set userInputCells(i) = Application.InputBox("Select the first cell of your reference column.", Type:=8)
     Next i
+    
+    Dim referenceLastRow As Long
+    referenceLastRow = userInputCells(1).End(xlDown).Row
+    
+    Dim referenceArray As Variant
+    With userInputCells(1)
+        referenceArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & referenceLastRow)
+    End With
+       
+    Dim targetArray As Variant
+    With userInputCells(2)
+        targetArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & referenceLastRow)
+    End With
+    
+    Dim comparisonLastRow As Long
+    comparisonLastRow = userInputCells(3).End(xlDown).Row
     
     Dim comparisonArray As Variant
-    Dim comparisonCell As Range
-    Dim comparisonLastRow As Long
-    Set comparisonCell = Application.InputBox("Select the first cell of the column to match values with.", Type:=8)
-    comparisonLastRow = comparisonCell.End(xlDown).Row
-    With comparisonCell
-        comparisonArray = Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
+    With userInputCells(3)
+        comparisonArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
     End With
-
-    Dim returnArray As Variant
-    Dim returnCell As Range
-    Set returnCell = Application.InputBox("Select the first cell from the column you wish to return values from.", Type:=8)
-    With returnCell
-        returnArray = Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
-    End With
-
-    ReDim Preserve comparisonArray(1 To UBound(comparisonArray, 1), 1 To UBound(comparisonArray, 2) + 1)
-    For i = LBound(comparisonArray, 1) To UBound(comparisonArray, 1)
-        comparisonArray(i, UBound(comparisonArray, 2)) = returnArray(i, 1)
-    Next i
     
-    With New Scripting.Dictionary
+    Dim returnArray As Variant
+    With userInputCells(4)
+        returnArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
+    End With
+    
+    Dim arrayMatchDictionary As Scripting.Dictionary
+    Set arrayMatchDictionary = New Scripting.Dictionary
+    
+    Call PopulateDictionaryWithArray( _
+        arrayMatchDictionary, _
+        comparisonArray, _
+        returnArray)
+        
+    Dim arrayToPaste As Variant
+    ReDim arrayToPaste(1 To UBound(referenceArray, 1), 1 To 1)
+    
+    arrayToPaste = CompareArrayToDictionary(arrayMatchDictionary, referenceArray, targetArray)
+        
+    With userInputCells(2)
+        .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & referenceLastRow) = arrayToPaste
+    End With
+        
+End Sub
+
+Sub PopulateDictionaryWithArray( _
+    ByRef arrayMatchDictionary As Variant, _
+    ByRef comparisonArray As Variant, _
+    ByRef returnArray As Variant)
+    
+    With arrayMatchDictionary
         .CompareMode = vbTextCompare
-
-        For i = LBound(comparisonArray, 1) To UBound(comparisonArray, 1)
-            If Not .Exists(comparisonArray(i, 1)) Then
-                .Add comparisonArray(i, 1), comparisonArray(i, 2)
+        
+        Dim loopCount As Long
+        For loopCount = LBound(comparisonArray, 1) To UBound(comparisonArray, 1)
+            If Not .Exists(comparisonArray(loopCount, 1)) Then
+                .Add comparisonArray(loopCount, 1), returnArray(loopCount, 1)
             End If
-        Next i
+        Next loopCount
+        
+    End With
+    
+End Sub
 
-        Dim arrayToPaste As Variant
-        ReDim arrayToPaste(1 To UBound(workingArray, 1), 1 To 1)
-        For i = LBound(workingArray, 1) To UBound(workingArray, 1)
-            If Len(workingArray(i, 2)) = 0 Then
-                If .Exists(workingArray(i, 1)) Then
-                    arrayToPaste(i, 1) = .Item(workingArray(i, 1))
+Function CompareArrayToDictionary( _
+    ByRef arrayMatchDictionary As Variant, _
+    ByRef referenceArray As Variant, _
+    ByRef targetArray As Variant)
+    
+    Dim dictionaryLoopedArray As Variant
+    ReDim dictionaryLoopedArray(1 To UBound(referenceArray, 1), 1 To 1)
+    
+    With arrayMatchDictionary
+    
+        Dim loopCount As Long
+        For loopCount = LBound(referenceArray, 1) To UBound(referenceArray, 1)
+            If Len(targetArray(loopCount, 1)) = 0 Then
+                If .Exists(referenceArray(loopCount, 1)) Then
+                    dictionaryLoopedArray(loopCount, 1) = .Item(referenceArray(loopCount, 1))
                 End If
             Else
-                arrayToPaste(i, 1) = workingArray(i, 2)
+                dictionaryLoopedArray(loopCount, 1) = targetArray(loopCount, 1)
             End If
-        Next i
+        Next loopCount
+        
     End With
+    
+    CompareArrayToDictionary = dictionaryLoopedArray
 
-    With targetCell
-        Range(.Address, Left(.Address, Len(.Address) - 1) & workingLastRow) = arrayToPaste
-    End With
-
-End Sub
+End Function
