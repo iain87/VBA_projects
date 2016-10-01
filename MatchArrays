@@ -31,35 +31,36 @@ Option Explicit
 
 Public Sub MatchArrays()
 
-    Dim referenceArray As Variant
-    Dim referenceCell As Range
+    Dim userInputCells As Collection
+    Set userInputCells = New Collection
+    userInputCells.Add Application.InputBox("Select the first cell of your reference column.", Type:=8), "referencing"
+    userInputCells.Add Application.InputBox("Select the first cell of your target column.", Type:=8), "targeting"
+    userInputCells.Add Application.InputBox("Select the first cell of your comparison column.", Type:=8), "comparing"
+    userInputCells.Add Application.InputBox("Select the first cell of your return column.", Type:=8), "returning"
+    
     Dim referenceLastRow As Long
-    Set referenceCell = Application.InputBox("Select the first cell of your comparison column.", Type:=8)
-    referenceLastRow = referenceCell.End(xlDown).Row
-    With referenceCell
+    referenceLastRow = userInputCells("referencing").End(xlDown).Row
+    
+    Dim referenceArray As Variant
+    With userInputCells("referencing")
         referenceArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & referenceLastRow)
     End With
-
+       
     Dim targetArray As Variant
-    Dim targetCell As Range
-    Set targetCell = Application.InputBox("Select the first cell of your target column.", Type:=8)
-    With targetCell
+    With userInputCells("targeting")
         targetArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & referenceLastRow)
     End With
-
-    Dim comparisonArray As Variant
-    Dim comparisonCell As Range
+    
     Dim comparisonLastRow As Long
-    Set comparisonCell = Application.InputBox("Select the first cell of the column to match values with.", Type:=8)
-    comparisonLastRow = comparisonCell.End(xlDown).Row
-    With comparisonCell
+    comparisonLastRow = userInputCells("comparing").End(xlDown).Row
+    
+    Dim comparisonArray As Variant
+    With userInputCells("comparing")
         comparisonArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
     End With
-
+    
     Dim returnArray As Variant
-    Dim returnCell As Range
-    Set returnCell = Application.InputBox("Select the first cell from the column you wish to return values from.", Type:=8)
-    With returnCell
+    With userInputCells("returning")
         returnArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
     End With
     
@@ -76,7 +77,7 @@ Public Sub MatchArrays()
     
     arrayToPaste = CompareArrayToDictionary(arrayMatchDictionary, referenceArray, targetArray)
         
-    With targetCell
+    With userInputCells("targeting")
         .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & referenceLastRow) = arrayToPaste
     End With
         
