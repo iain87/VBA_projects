@@ -36,18 +36,18 @@ Public Sub MatchArrays()
     Dim thisFirstRow As Long
     Dim thisLastRow As Long
     
-    Dim x(1 To 4) As String
-    x(1) = "Select the FIRST cell in the column to MATCH from."
-    x(2) = "Select ANY cell in the TARGET column."
-    x(3) = "Select the FIRST cell in the column to LOOKUP against."
-    x(4) = "Select ANY cell from the column you want to RETURN VALUES from."
+    Dim inputBoxText(1 To 4) As String
+    inputBoxText(1) = "Select the FIRST cell in the column to MATCH from."
+    inputBoxText(2) = "Select ANY cell in the TARGET column."
+    inputBoxText(3) = "Select the FIRST cell in the column to LOOKUP against."
+    inputBoxText(4) = "Select ANY cell from the column you want to RETURN VALUES from."
         
     Dim loopNumber As Long
     For loopNumber = 1 To 4
     
 
         On Error GoTo InputError:
-        Set userInputCells(loopNumber) = Application.InputBox(x(loopNumber), "Match Array", Type:=8)
+        Set userInputCells(loopNumber) = Application.InputBox(inputBoxText(loopNumber), "Match Array", Type:=8)
 InputError:
         If userInputCells(loopNumber) Is Nothing Then Exit Sub
                 
