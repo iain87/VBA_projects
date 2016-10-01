@@ -35,16 +35,29 @@ Public Sub MatchArrays()
     Dim userInputArrays(1 To 4) As Variant
     Dim thisFirstRow As Long
     Dim thisLastRow As Long
-    Dim loopNumber As Long
     
+    Dim x(1 To 4) As String
+    x(1) = "Select the FIRST cell in the column to MATCH from."
+    x(2) = "Select ANY cell in the TARGET column."
+    x(3) = "Select the FIRST cell in the column to LOOKUP against."
+    x(4) = "Select ANY cell from the column you want to RETURN VALUES from."
+        
+    Dim loopNumber As Long
     For loopNumber = 1 To 4
     
-        Set userInputCells(loopNumber) = Application.InputBox("Select the first cell of your reference column.", Type:=8)
-        
-        If loopNumber = 1 Or loopNumber = 3 Then
-            thisFirstRow = userInputCells(loopNumber).Row
-            thisLastRow = userInputCells(loopNumber).End(xlDown).Row
-        End If
+
+        On Error GoTo InputError:
+        Set userInputCells(loopNumber) = Application.InputBox(x(loopNumber), "Match Array", Type:=8)
+InputError:
+        If userInputCells(loopNumber) Is Nothing Then Exit Sub
+                
+        Select Case loopNumber
+            Case 2, 4
+                If Not userInputCells(loopNumber).Parent.Name = userInputCells(loopNumber - 1).Parent.Name Then GoTo InputError
+            Case 1, 3
+                thisFirstRow = userInputCells(loopNumber).Row
+                thisLastRow = userInputCells(loopNumber).End(xlDown).Row
+            End Select
             
         Set userInputCells(loopNumber) = userInputCells(loopNumber).Parent.Cells(thisFirstRow, userInputCells(loopNumber).Column)
         
@@ -54,35 +67,6 @@ Public Sub MatchArrays()
         
     Next loopNumber
     
-<<<<<<< HEAD
-    Dim referenceLastRow As Long
-    referenceLastRow = userInputCells(1).End(xlDown).Row
-    
-    Dim referenceArray As Variant
-    With userInputCells(1)
-        referenceArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & referenceLastRow)
-    End With
-       
-    Dim targetArray As Variant
-    With userInputCells(2)
-        targetArray = .Parent.Range(.Parent.Cells(userInputCells(1).Row, .Column), Left(.Address, Len(.Address) - 1) & referenceLastRow)
-    End With
-    
-    Dim comparisonLastRow As Long
-    comparisonLastRow = userInputCells(3).End(xlDown).Row
-    
-    Dim comparisonArray As Variant
-    With userInputCells(3)
-        comparisonArray = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & comparisonLastRow)
-    End With
-    
-    Dim returnArray As Variant
-    With userInputCells(4)
-        returnArray = .Parent.Range(.Parent.Cells(userInputCells(3).Row, .Column), Left(.Address, Len(.Address) - 1) & comparisonLastRow)
-    End With
-    
-=======
->>>>>>> origin/master
     Dim arrayMatchDictionary As Scripting.Dictionary
     Set arrayMatchDictionary = New Scripting.Dictionary
     
