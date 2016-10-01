@@ -34,26 +34,19 @@ Public Sub MatchArrays()
     Dim userInputCells(1 To 4) As Range
     Dim userInputArrays(1 To 4) As Variant
     Dim thisLastRow As Long
-    Dim i As Long
+    Dim loopNumber As Long
     
-    For i = 1 To 4
+    For loopNumber = 1 To 4
     
-        Set userInputCells(i) = Application.InputBox("Select the first cell of your reference column.", Type:=8)
+        Set userInputCells(loopNumber) = Application.InputBox("Select the first cell of your reference column.", Type:=8)
         
-        Select Case i
-            Case 1
-                thisLastRow = userInputCells(1).End(xlDown).Row
-                Dim referenceLastRow As Long
-                referenceLastRow = thisLastRow
-            Case 3
-                thisLastRow = userInputCells(3).End(xlDown).Row
-        End Select
+        If loopNumber = 1 Or loopNumber = 3 Then thisLastRow = userInputCells(loopNumber).End(xlDown).Row
             
-        With userInputCells(i)
-            userInputArrays(i) = .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & thisLastRow)
+        With userInputCells(loopNumber)
+            userInputArrays(loopNumber) = .Parent.Range(.Address, .Offset(thisLastRow - userInputCells(loopNumber).Row))
         End With
         
-    Next i
+    Next loopNumber
     
     Dim arrayMatchDictionary As Scripting.Dictionary
     Set arrayMatchDictionary = New Scripting.Dictionary
@@ -66,10 +59,13 @@ Public Sub MatchArrays()
     Dim arrayToPaste As Variant
     ReDim arrayToPaste(1 To UBound(userInputArrays(1), 1), 1 To 1)
     
-    arrayToPaste = CompareArrayToDictionary(arrayMatchDictionary, userInputArrays(1), userInputArrays(2))
+    arrayToPaste = CompareArrayToDictionary( _
+        arrayMatchDictionary, _
+        userInputArrays(1), _
+        userInputArrays(2))
         
     With userInputCells(2)
-        .Parent.Range(.Address, Left(.Address, Len(.Address) - 1) & referenceLastRow) = arrayToPaste
+        .Parent.Range(.Address, .Offset(UBound(arrayToPaste, 1) - LBound(arrayToPaste, 1))) = arrayToPaste
     End With
         
 End Sub
