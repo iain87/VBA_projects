@@ -33,6 +33,7 @@ Public Sub MatchArrays()
 
     Dim userInputCells(1 To 4) As Range
     Dim userInputArrays(1 To 4) As Variant
+    Dim thisFirstRow As Long
     Dim thisLastRow As Long
     Dim loopNumber As Long
     
@@ -40,10 +41,15 @@ Public Sub MatchArrays()
     
         Set userInputCells(loopNumber) = Application.InputBox("Select the first cell of your reference column.", Type:=8)
         
-        If loopNumber = 1 Or loopNumber = 3 Then thisLastRow = userInputCells(loopNumber).End(xlDown).Row
+        If loopNumber = 1 Or loopNumber = 3 Then
+            thisFirstRow = userInputCells(loopNumber).Row
+            thisLastRow = userInputCells(loopNumber).End(xlDown).Row
+        End If
             
+        Set userInputCells(loopNumber) = userInputCells(loopNumber).Parent.Cells(thisFirstRow, userInputCells(loopNumber).Column)
+        
         With userInputCells(loopNumber)
-            userInputArrays(loopNumber) = .Parent.Range(.Address, .Offset(thisLastRow - userInputCells(loopNumber).Row))
+            userInputArrays(loopNumber) = .Parent.Range(.Address, .Offset(thisLastRow - thisFirstRow))
         End With
         
     Next loopNumber
