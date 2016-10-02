@@ -45,14 +45,15 @@ Public Sub MatchArrays()
     Dim loopNumber As Long
     For loopNumber = 1 To 4
                 
-        'On Error GoTo InputError
+        On Error GoTo InputError
+SheetError:
         Set userInputCells(loopNumber) = Application.InputBox(inputBoxText(loopNumber), "Match Array", Type:=8)
 InputError:
-        'If userInputCells(loopNumber) Is Nothing Then Exit Sub
+        If userInputCells(loopNumber) Is Nothing Then Exit Sub
                 
         Select Case loopNumber
             Case 2, 4
-                If Not userInputCells(loopNumber).Parent.Name = userInputCells(loopNumber - 1).Parent.Name Then GoTo InputError
+                If Not userInputCells(loopNumber).Parent.Name = userInputCells(loopNumber - 1).Parent.Name Then GoTo SheetError
             Case 1, 3
                 thisFirstRow = userInputCells(loopNumber).Row
                 thisLastRow = LastRow(userInputCells(loopNumber))
