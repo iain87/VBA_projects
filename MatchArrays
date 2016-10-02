@@ -97,7 +97,6 @@ Sub PopulateDictionaryWithArray( _
         .CompareMode = vbTextCompare
         
         Dim loopCount As Long
-        MsgBox LBound(comparisonArray, 1)
         For loopCount = LBound(comparisonArray, 1) To UBound(comparisonArray, 1)
             If Not .Exists(comparisonArray(loopCount, 1)) Then
                 .Add comparisonArray(loopCount, 1), returnArray(loopCount, 1)
@@ -142,3 +141,5 @@ Function LastRow(ByRef userInputCell As Range)
     End With
 
 End Function
+
+
