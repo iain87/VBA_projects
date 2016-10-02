@@ -19,17 +19,38 @@
 ''                                                                            ''
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-''                                                                            ''
-''  To run this code, you will require the Microsoft Scripting Runtime        ''
-''  package, which you can enable from the VBE editor by going to tools       ''
-''  then references and choosing it from the list there.                      ''
-''                                                                            ''
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
 Option Explicit
 
-Public Sub MatchArrays()
+Public Sub MatchArraysEarlyBind()
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''                                                                          ''
+''  This Sub allows you to use the Early Bind version of the Scripting      ''
+''  Dictionary, which should also run faster.                               ''
+''                                                                          ''
+''  To run this sub, you will require the Microsoft Scripting Runtime       ''
+''  package, which you can enable from the VBE editor by going to tools     ''
+''  then references and choosing it from the list there.                    ''
+''                                                                          ''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    
+    Dim arrayMatchDictionary As Dictionary
+    Set arrayMatchDictionary = New Dictionary
+    
+    Call ContinueMatchArray(arrayMatchDictionary)
+    
+End Sub
+
+Public Sub MatchArraysLateBind()
+
+    Dim arrayMatchDictionary As Object
+    Set arrayMatchDictionary = CreateObject("Scripting.Dictionary")
+    
+    Call ContinueMatchArray(arrayMatchDictionary)
+
+End Sub
+
+Public Sub ContinueMatchArray(ByRef arrayMatchDictionary As Variant)
 
     Dim userInputCells(1 To 4) As Range
     Dim userInputArrays(1 To 4) As Variant
@@ -67,8 +88,6 @@ InputError:
         
     Next loopNumber
     
-    Dim arrayMatchDictionary As Scripting.Dictionary
-    Set arrayMatchDictionary = New Scripting.Dictionary
     
     Call PopulateDictionaryWithArray( _
         arrayMatchDictionary, _
@@ -142,5 +161,3 @@ Function LastRow(ByRef userInputCell As Range)
     End With
 
 End Function
-
-
