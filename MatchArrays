@@ -25,9 +25,6 @@ Public Sub MatchArraysEarlyBind()
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ''                                                                          ''
-''  This Sub allows you to use the Early Bind version of the Scripting      ''
-''  Dictionary, which should also run faster.                               ''
-''                                                                          ''
 ''  To run this sub, you will require the Microsoft Scripting Runtime       ''
 ''  package, which you can enable from the VBE editor by going to tools     ''
 ''  then references and choosing it from the list there.                    ''
@@ -36,21 +33,6 @@ Public Sub MatchArraysEarlyBind()
     
     Dim arrayMatchDictionary As Dictionary
     Set arrayMatchDictionary = New Dictionary
-    
-    Call ContinueMatchArray(arrayMatchDictionary)
-    
-End Sub
-
-Public Sub MatchArraysLateBind()
-
-    Dim arrayMatchDictionary As Object
-    Set arrayMatchDictionary = CreateObject("Scripting.Dictionary")
-    
-    Call ContinueMatchArray(arrayMatchDictionary)
-
-End Sub
-
-Public Sub ContinueMatchArray(ByRef arrayMatchDictionary As Variant)
 
     Dim userInputCells(1 To 4) As Range
     Dim userInputArrays(1 To 4) As Variant
@@ -109,7 +91,7 @@ InputError:
 End Sub
 
 Sub PopulateDictionaryWithArray( _
-    ByRef arrayMatchDictionary As Variant, _
+    ByRef arrayMatchDictionary As Dictionary, _
     ByRef comparisonArray As Variant, _
     ByRef returnArray As Variant)
     
@@ -128,7 +110,7 @@ Sub PopulateDictionaryWithArray( _
 End Sub
 
 Function CompareArrayToDictionary( _
-    ByRef arrayMatchDictionary As Variant, _
+    ByRef arrayMatchDictionary As Dictionary, _
     ByRef referenceArray As Variant, _
     ByRef targetArray As Variant)
     
