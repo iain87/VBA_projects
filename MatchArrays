@@ -21,81 +21,57 @@
 
 Option Explicit
 
-Public Sub MatchArraysEarlyBind()
+Public Sub RunMatchArrays()
+      
+    Dim matchCell As Range
+    Set matchCell = InputToRange("Select the FIRST cell from the column to MATCH.")
+    If matchCell Is Nothing Then Exit Sub
+    
+    Dim targetCell As Range
+    Set targetCell = InputToRange("Select ANY cell from the column you want to TARGET. This should be on the same worksheet as the MATCH column.")
+    If targetCell Is Nothing Then Exit Sub
+    
+    Dim compareCell As Range
+    Set compareCell = InputToRange("Select the FIRST cell from the column to LOOKUP.")
+    If compareCell Is Nothing Then Exit Sub
+     
+    Dim arrayToPaste As Variant
+    arrayToPaste = MatchArrays( _
+        MakeArray(RangeToLastRow(matchCell)), _
+        MakeArray(RangeToLastRow(targetCell, LastRow(matchCell))), _
+        MakeArray(RangeToLastRow(compareCell)), _
+        MakeArray(RangeToLastRow(InputToRange("Return Value"), LastRow(compareCell))))
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-''                                                                          ''
-''  To run this sub, you will require the Microsoft Scripting Runtime       ''
-''  package, which you can enable from the VBE editor by going to tools     ''
-''  then references and choosing it from the list there.                    ''
-''                                                                          ''
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    RangeToLastRow(targetCell, UBound(arrayToPaste, 1)) = arrayToPaste
+
+End Sub
+Function MakeArray(ByVal ThisRange As Range) As Variant
+
+    MakeArray = ThisRange
+
+End Function
+
+Function MatchArrays(ByRef matchArray As Variant, ByRef targetArray As Variant, ByRef compareArray As Variant, Optional ByRef returnArray As Variant)
+
+    Dim arrayToPaste As Variant
+    ReDim arrayToPaste(1 To UBound(matchArray, 1))
     
     Dim arrayMatchDictionary As Dictionary
     Set arrayMatchDictionary = New Dictionary
+    Set arrayMatchDictionary = PopulateDictionaryWithArray(compareArray, returnArray)
+    
+    arrayToPaste = CompareArrayToDictionary(arrayMatchDictionary, matchArray)
 
-    Dim userInputCells(1 To 4) As Range
-    Dim userInputArrays(1 To 4) As Variant
-    Dim thisFirstRow As Long
-    Dim thisLastRow As Long
-    
-    Dim inputBoxText(1 To 4) As String
-    inputBoxText(1) = "Select the FIRST cell from the column to MATCH."
-    inputBoxText(2) = "Select ANY cell from the column you want to TARGET. This should be on the same worksheet as the MATCH column."
-    inputBoxText(3) = "Select the FIRST cell from the column to LOOKUP."
-    inputBoxText(4) = "Select ANY cell from the column you want to RETURN VALUES. This should be on the same worksheet as the LOOKUP column."
-        
-    Dim loopNumber As Long
-    For loopNumber = 1 To 4
-                
-        On Error GoTo InputError
-SheetError:
-        Set userInputCells(loopNumber) = Application.InputBox(inputBoxText(loopNumber), "Match Array", Type:=8)
-InputError:
-        If userInputCells(loopNumber) Is Nothing Then Exit Sub
-                
-        Select Case loopNumber
-            Case 2, 4
-                If Not userInputCells(loopNumber).Parent.Name = userInputCells(loopNumber - 1).Parent.Name Then GoTo SheetError
-            Case 1, 3
-                thisFirstRow = userInputCells(loopNumber).Row
-                thisLastRow = LastRow(userInputCells(loopNumber))
-            End Select
-            
-        Set userInputCells(loopNumber) = userInputCells(loopNumber).Parent.Cells(thisFirstRow, userInputCells(loopNumber).Column)
-        
-        With userInputCells(loopNumber)
-            userInputArrays(loopNumber) = .Parent.Range(.Address, .Offset(thisLastRow - thisFirstRow))
-        End With
-        
-    Next loopNumber
-    
-    
-    Call PopulateDictionaryWithArray( _
-        arrayMatchDictionary, _
-        userInputArrays(3), _
-        userInputArrays(4))
-        
-    Dim arrayToPaste As Variant
-    ReDim arrayToPaste(1 To UBound(userInputArrays(1), 1))
-    
-    arrayToPaste = CompareArrayToDictionary( _
-        arrayMatchDictionary, _
-        userInputArrays(1), _
-        userInputArrays(2))
-        
-    With userInputCells(2)
-        .Parent.Range(.Address, .Offset(UBound(arrayToPaste, 1) - LBound(arrayToPaste, 1))) = arrayToPaste
-    End With
-        
-End Sub
+    MatchArrays = OverwriteWithAuthoritativeArray(targetArray, arrayToPaste, 1)
 
-Sub PopulateDictionaryWithArray( _
-    ByRef arrayMatchDictionary As Dictionary, _
-    ByRef comparisonArray As Variant, _
-    ByRef returnArray As Variant)
+End Function
+
+Function PopulateDictionaryWithArray(ByRef comparisonArray As Variant, ByRef returnArray As Variant) As Dictionary
     
-    With arrayMatchDictionary
+    Dim dict As Dictionary
+    Set dict = New Dictionary
+    
+    With dict
         .CompareMode = vbTextCompare
         
         Dim loopCount As Long
@@ -107,12 +83,11 @@ Sub PopulateDictionaryWithArray( _
         
     End With
     
-End Sub
+    Set PopulateDictionaryWithArray = dict
+    
+End Function
 
-Function CompareArrayToDictionary( _
-    ByRef arrayMatchDictionary As Dictionary, _
-    ByRef referenceArray As Variant, _
-    ByRef targetArray As Variant)
+Function CompareArrayToDictionary(ByRef arrayMatchDictionary As Dictionary, ByRef referenceArray As Variant)
     
     Dim dictionaryLoopedArray As Variant
     ReDim dictionaryLoopedArray(1 To UBound(referenceArray, 1), 1 To 1)
@@ -121,12 +96,8 @@ Function CompareArrayToDictionary( _
     
         Dim loopCount As Long
         For loopCount = LBound(referenceArray, 1) To UBound(referenceArray, 1)
-            If Len(targetArray(loopCount, 1)) = 0 Then
-                If .Exists(referenceArray(loopCount, 1)) Then
-                    dictionaryLoopedArray(loopCount, 1) = .Item(referenceArray(loopCount, 1))
-                End If
-            Else
-                dictionaryLoopedArray(loopCount, 1) = targetArray(loopCount, 1)
+            If .Exists(referenceArray(loopCount, 1)) Then
+                dictionaryLoopedArray(loopCount, 1) = .Item(referenceArray(loopCount, 1))
             End If
         Next loopCount
         
@@ -141,5 +112,43 @@ Function LastRow(ByRef userInputCell As Range)
     With userInputCell
         LastRow = .Parent.Cells(.Parent.Rows.Count, .Column).End(xlUp).Row
     End With
+
+End Function
+
+Function RangeToLastRow(ByRef FirstCell As Range, Optional ByVal DefinedLastRow As Long)
+
+    Dim thisLastRow As Long
+
+    If DefinedLastRow > 1 Then
+        thisLastRow = DefinedLastRow
+    Else
+        thisLastRow = LastRow(FirstCell)
+    End If
+
+    With FirstCell
+        Set RangeToLastRow = .Parent.Range(.Parent.Cells(.Row, .Column), .Parent.Cells(thisLastRow, .Column))
+    End With
+    
+End Function
+
+Function InputToRange(ByVal InputText As String) As Range
+
+        On Error GoTo InputError
+        Set InputToRange = Application.InputBox(InputText, "Match Array", Type:=8)
+InputError:
+        If InputToRange Is Nothing Then Exit Function
+
+End Function
+
+Function OverwriteWithAuthoritativeArray(ByRef AuthoritativeArray As Variant, ByRef ArrayToOverwrite As Variant, ByVal ColumnToCompare As Long)
+
+    Dim loopCount As Long
+    For loopCount = LBound(ArrayToOverwrite, ColumnToCompare) To UBound(ArrayToOverwrite, ColumnToCompare)
+        If Len(ArrayToOverwrite(loopCount, ColumnToCompare)) = 0 Then
+            ArrayToOverwrite(loopCount, ColumnToCompare) = AuthoritativeArray(loopCount, ColumnToCompare)
+        End If
+    Next loopCount
+    
+    OverwriteWithAuthoritativeArray = ArrayToOverwrite
 
 End Function
