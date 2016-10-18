@@ -23,38 +23,49 @@
 
 Option Explicit
 
-Public Sub RunMatchArrays()
+Public Sub MatchArraysWithUserInput()
       
     Dim matchCell As Range
     Set matchCell = InputToRange("Select the FIRST cell from the column to MATCH.")
     If matchCell Is Nothing Then Exit Sub
     
     Dim targetCell As Range
-    Set targetCell = InputToRange("Select ANY cell from the column you want to TARGET. This should be on the same worksheet as the MATCH column.")
+    Set targetCell = ActiveCell
     If targetCell Is Nothing Then Exit Sub
     
     Dim compareCell As Range
     Set compareCell = InputToRange("Select the FIRST cell from the column to LOOKUP.")
     If compareCell Is Nothing Then Exit Sub
+    
+    Dim returnCell As Range
+    Set returnCell = InputToRange("Select ANY cell from the column to RETURN VALUES.")
+    If returnCell Is Nothing Then Exit Sub
      
     Dim arrayToPaste As Variant
     arrayToPaste = MatchArrays( _
-        MakeArray(RangeToLastRow(matchCell)), _
-        MakeArray(RangeToLastRow(targetCell, LastRow(matchCell))), _
-        MakeArray(RangeToLastRow(compareCell)), _
-        MakeArray(RangeToLastRow(InputToRange("Return Value"), LastRow(compareCell))))
+        RangeToLastRow(matchCell), _
+        RangeToLastRow(targetCell, LastRow(matchCell)), _
+        RangeToLastRow(compareCell), _
+        RangeToLastRow(returnCell))
 
     RangeToLastRow(targetCell, targetCell.Row + UBound(arrayToPaste, 1) - 1) = arrayToPaste
 
 End Sub
-Function MakeArray(ByVal ThisRange As Range) As Variant
 
-    MakeArray = ThisRange
-
-End Function
-
-Function MatchArrays(ByRef matchArray As Variant, ByRef targetArray As Variant, ByRef compareArray As Variant, Optional ByRef returnArray As Variant)
-
+Function MatchArrays(ByVal matchRange As Range, ByVal targetRange As Range, ByVal compareRange As Range, Optional ByVal returnRange As Range)
+   
+    Dim matchArray As Variant
+    matchArray = matchRange
+    
+    Dim targetArray As Variant
+    targetArray = targetRange
+    
+    Dim compareArray As Variant
+    compareArray = compareRange
+    
+    Dim returnArray As Variant
+    returnArray = returnRange
+    
     Dim arrayToPaste As Variant
     ReDim arrayToPaste(1 To UBound(matchArray, 1))
     
@@ -154,3 +165,4 @@ Function OverwriteWithAuthoritativeArray(ByRef AuthoritativeArray As Variant, By
     OverwriteWithAuthoritativeArray = ArrayToOverwrite
 
 End Function
+
