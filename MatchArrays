@@ -44,7 +44,7 @@ Public Sub RunMatchArrays()
         MakeArray(RangeToLastRow(compareCell)), _
         MakeArray(RangeToLastRow(InputToRange("Return Value"), LastRow(compareCell))))
 
-    RangeToLastRow(targetCell, UBound(arrayToPaste, 1)) = arrayToPaste
+    RangeToLastRow(targetCell, targetCell.Row + UBound(arrayToPaste, 1) - 1) = arrayToPaste
 
 End Sub
 Function MakeArray(ByVal ThisRange As Range) As Variant
